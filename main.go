@@ -51,7 +51,9 @@ func main() {
 		unMatchUsers = append(unMatchUsers, unMatchUser)
 	}
 	fmt.Printf("unMatchUsers: %v\n", unMatchUsers)
-	fmt.Printf("users: %+v\n", users)
+
+	// TODO: アンマッチユーザーで再度仮マッチを試行する
+	// TODO: 仮マッチからマッチ完了になる条件は何か？？？
 }
 
 // CreateMatch ユーザーを希望するクリニックとマッチさせる
