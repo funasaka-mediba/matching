@@ -1,0 +1,114 @@
+user: satou
+desiredClinic: b
+クリニックの希望リストにユーザーが含まれてるよ
+len(desiredClinic.tmpMatch): 0
+user.Name: satou, clinic.Name: b, tmpMatch-1
+
+user: suzuki
+desiredClinic: b
+クリニックの希望リストにユーザーが含まれてるよ
+len(desiredClinic.tmpMatch): 1
+user.Name: suzuki, clinic.Name: b, tmpMatch-1
+
+user: takahashi
+desiredClinic: b
+クリニックの希望リストにユーザーが含まれてるよ
+仮マッチ埋まってる
+FindUnMatchUser:: clinic: b, u: takahashi
+userIDs: [3 1 2]
+worstUser.Name: takahashi
+UnMatchUser.Name: takahashi, clinic.Name: b
+
+user: takahashi
+desiredClinic: a
+クリニックの希望リストにユーザーが含まれてるよ
+len(desiredClinic.tmpMatch): 0
+user.Name: takahashi, clinic.Name: a, tmpMatch-1
+
+user: tanaka
+desiredClinic: a
+残念、クリニックはあなたいらないって
+user.Name: tanaka, clinic.Name: a, unmatch
+
+user: tanaka
+desiredClinic: b
+クリニックの希望リストにユーザーが含まれてるよ
+仮マッチ埋まってる
+FindUnMatchUser:: clinic: b, u: tanaka
+userIDs: [4 1 2]
+worstUser.Name: tanaka
+UnMatchUser.Name: tanaka, clinic.Name: b
+
+user: tanaka
+desiredClinic: c
+クリニックの希望リストにユーザーが含まれてるよ
+len(desiredClinic.tmpMatch): 0
+user.Name: tanaka, clinic.Name: c, tmpMatch-1
+
+user: watanabe
+desiredClinic: b
+クリニックの希望リストにユーザーが含まれてるよ
+仮マッチ埋まってる
+FindUnMatchUser:: clinic: b, u: watanabe
+userIDs: [5 1 2]
+worstUser.Name: suzuki
+UnMatchUser.Name: suzuki, clinic.Name: b
+user.Name: watanabe, clinic.Name: b, tmpMatch-2
+
+user: yamamoto
+desiredClinic: b
+クリニックの希望リストにユーザーが含まれてるよ
+仮マッチ埋まってる
+FindUnMatchUser:: clinic: b, u: yamamoto
+userIDs: [6 1 5]
+worstUser.Name: yamamoto
+UnMatchUser.Name: yamamoto, clinic.Name: b
+
+user: yamamoto
+desiredClinic: c
+残念、クリニックはあなたいらないって
+user.Name: yamamoto, clinic.Name: c, unmatch
+
+user: yamamoto
+desiredClinic: a
+残念、クリニックはあなたいらないって
+user.Name: yamamoto, clinic.Name: a, unmatch
+
+user: yamamoto
+desiredClinic: d
+クリニックの希望リストにユーザーが含まれてるよ
+len(desiredClinic.tmpMatch): 0
+user.Name: yamamoto, clinic.Name: d, tmpMatch-1
+
+user: kobayashi
+desiredClinic: b
+クリニックの希望リストにユーザーが含まれてるよ
+仮マッチ埋まってる
+FindUnMatchUser:: clinic: b, u: kobayashi
+userIDs: [7 1 5]
+worstUser.Name: satou
+UnMatchUser.Name: satou, clinic.Name: b
+user.Name: kobayashi, clinic.Name: b, tmpMatch-2
+
+user: abe
+desiredClinic: d
+残念、クリニックはあなたいらないって
+user.Name: abe, clinic.Name: d, unmatch
+
+user: abe
+desiredClinic: b
+クリニックの希望リストにユーザーが含まれてるよ
+仮マッチ埋まってる
+FindUnMatchUser:: clinic: b, u: abe
+userIDs: [8 7 5]
+worstUser.Name: watanabe
+UnMatchUser.Name: watanabe, clinic.Name: b
+user.Name: abe, clinic.Name: b, tmpMatch-2
+a.tmpMatch: takahashi
+b.tmpMatch: kobayashi
+b.tmpMatch: abe
+c.tmpMatch: tanaka
+d.tmpMatch: yamamoto
+unMatchUser0: suzuki
+unMatchUser1: satou
+unMatchUser2: watanabe
