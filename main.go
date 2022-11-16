@@ -20,7 +20,7 @@ type User struct {
 
 func main() {
 	a := Clinic{1, "a", []int{3, 7}, []*User{}, 2}
-	b := Clinic{2, "b", []int{7, 8, 6, 1, 2, 3, 4, 6}, []*User{}, 2}
+	b := Clinic{2, "b", []int{7, 8, 5, 1, 2, 3, 4, 6}, []*User{}, 2}
 	c := Clinic{3, "c", []int{2, 5, 8, 1, 3, 4, 7}, []*User{}, 2}
 	d := Clinic{4, "d", []int{2, 5, 1, 3, 6, 4, 7}, []*User{}, 2}
 
@@ -48,12 +48,39 @@ func main() {
 
 	for _, user := range users {
 		unMatchUser := CreateMatch(user)
-		unMatchUsers = append(unMatchUsers, unMatchUser)
+		if unMatchUser != nil {
+			unMatchUsers = append(unMatchUsers, unMatchUser)
+		}
 	}
-	fmt.Printf("unMatchUsers: %v\n", unMatchUsers)
+	for _, v := range a.tmpMatch {
+		fmt.Printf("a.tmpMatch: %+v\n", v.Name)
+	}
+	for _, v := range b.tmpMatch {
+		fmt.Printf("b.tmpMatch: %+v\n", v.Name)
+	}
+	for _, v := range c.tmpMatch {
+		fmt.Printf("c.tmpMatch: %+v\n", v.Name)
+	}
+	for _, v := range d.tmpMatch {
+		fmt.Printf("d.tmpMatch: %+v\n", v.Name)
+	}
+	for i, v := range unMatchUsers {
+		fmt.Printf("unMatchUser%v: %v\n", i, v.Name)
+	}
 
 	// TODO: アンマッチユーザーで再度仮マッチを試行する
-	// TODO: 仮マッチからマッチ完了になる条件は何か？？？
+	secondUnMatchUser := []*User{}
+	for _, v := range unMatchUsers {
+		unMatchUser := CreateMatch(v)
+		if unMatchUser != nil {
+			secondUnMatchUser = append(secondUnMatchUser, unMatchUser)
+		}
+	}
+	for i, v := range secondUnMatchUser {
+		fmt.Printf("secondUnMatchUser%v: %v\n", i, v.Name)
+	}
+
+	// TODO: アンマッチユーザーを何回やり直してあげればいいのか？？？
 }
 
 // CreateMatch ユーザーを希望するクリニックとマッチさせる
@@ -61,21 +88,30 @@ func CreateMatch(user *User) *User {
 	var unMatchUser *User
 	for i := 1; i <= len(user.DesiredRank); i++ {
 		desiredClinic := user.DesiredRank[i]
+		fmt.Printf("\nuser: %+v\n", user.Name)
+		fmt.Printf("desiredClinic: %+v\n", desiredClinic.Name)
 		// desiredClinicのDesiredRankのvalueの中に登録しようとしているユーザーのIDが含まれていなければ、そのユーザーはそのクリニックとはアンマッチなのでスキップ
 		if !ContainsUserID(desiredClinic.DesiredRank, user.ID) {
+			fmt.Println("残念、クリニックはあなたいらないって")
+			fmt.Printf("user.Name: %+v, clinic.Name: %+v, unmatch\n", user.Name, desiredClinic.Name)
 			continue
 		}
-		// この時点でユーザーの希望クリニックの仮マッチリストに既に他ユーザーが存在している
-		if len(desiredClinic.tmpMatch) != desiredClinic.Limit {
+		fmt.Println("クリニックの希望リストにユーザーが含まれてるよ")
+		if len(desiredClinic.tmpMatch) < desiredClinic.Limit {
 			// ユーザーの希望しているクリニックの仮マッチリストに空きがあるので仮マッチ
+			fmt.Printf("len(desiredClinic.tmpMatch): %+v\n", len(desiredClinic.tmpMatch))
+			fmt.Printf("user.Name: %+v, clinic.Name: %+v, tmpMatch-1\n", user.Name, desiredClinic.Name)
 			desiredClinic.tmpMatch = append(desiredClinic.tmpMatch, user)
 			return nil
 		}
 		// この時点でユーザーの希望クリニックの仮マッチリストの要素が埋まっている
+		fmt.Println("仮マッチ埋まってる")
 		// 最下位のユーザーを判定する
 		unMatchUser = FindUnMatchUser(desiredClinic, user)
+		fmt.Printf("UnMatchUser.Name: %+v, clinic.Name: %+v\n", unMatchUser.Name, desiredClinic.Name)
 		if unMatchUser != user {
 			// ユーザーは仮マッチできる
+			fmt.Printf("user.Name: %+v, clinic.Name: %+v, tmpMatch-2\n", user.Name, desiredClinic.Name)
 			desiredClinic.UpdateTmpMatch(user, unMatchUser)
 			return unMatchUser
 		}
@@ -111,11 +147,12 @@ func (clinic *Clinic) UpdateTmpMatch(u, unMatchUser *User) {
 
 // FindUnMatchUser tmpMatch内のユーザーと新規ユーザーの中で最下位のユーザーを判定する
 func FindUnMatchUser(clinic *Clinic, u *User) *User {
-	userIDs := []int{}
-	clinic.tmpMatch = append(clinic.tmpMatch, u)
+	userIDs := []int{u.ID}
+	fmt.Printf("FindUnMatchUser:: clinic: %v, u: %v\n", clinic.Name, u.Name)
 	for _, v := range clinic.tmpMatch {
 		userIDs = append(userIDs, v.ID)
 	}
+	fmt.Printf("userIDs: %+v\n", userIDs)
 	desiredRank := clinic.DesiredRank
 
 	// userIDsのIDの中で、desiredRankの中で一番右にあるIDを特定する
@@ -129,11 +166,16 @@ func FindUnMatchUser(clinic *Clinic, u *User) *User {
 	}
 
 	// 最下位のIDを持つユーザーを特定する
-	var worstUser *User
-	for _, v := range clinic.tmpMatch {
-		if v.ID == worstID {
-			worstUser = v
+	worstUser := &User{}
+	if worstID == u.ID {
+		worstUser = u
+	} else {
+		for _, v := range clinic.tmpMatch {
+			if v.ID == worstID {
+				worstUser = v
+			}
 		}
 	}
+	fmt.Printf("worstUser.Name: %+v\n", worstUser.Name)
 	return worstUser
 }

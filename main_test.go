@@ -211,6 +211,39 @@ func TestFindUnMatchUser(t *testing.T) {
 			name: "success",
 			args: args{
 				clinic: Clinic{
+					ID:          2,
+					Name:        "b",
+					DesiredRank: []int{7, 8, 5, 1, 2, 3, 4, 6},
+					tmpMatch: []*User{
+						{
+							ID:          1,
+							Name:        "satou",
+							DesiredRank: map[int]*Clinic{},
+						},
+						{
+							ID:          2,
+							Name:        "suzuki",
+							DesiredRank: map[int]*Clinic{},
+						},
+					},
+					Limit: 2,
+				},
+				u: &User{
+					ID:          3,
+					Name:        "takahashi",
+					DesiredRank: map[int]*Clinic{},
+				},
+			},
+			want: &User{
+				ID:          3,
+				Name:        "takahashi",
+				DesiredRank: map[int]*Clinic{},
+			},
+		},
+		{
+			name: "success",
+			args: args{
+				clinic: Clinic{
 					ID:          3,
 					Name:        "c",
 					DesiredRank: []int{2, 5, 8, 1, 3, 4, 7},
@@ -237,6 +270,39 @@ func TestFindUnMatchUser(t *testing.T) {
 			want: &User{
 				ID:          4,
 				Name:        "tanaka",
+				DesiredRank: map[int]*Clinic{},
+			},
+		},
+		{
+			name: "success",
+			args: args{
+				clinic: Clinic{
+					ID:          2,
+					Name:        "b",
+					DesiredRank: []int{7, 8, 5, 1, 2, 3, 4, 6},
+					tmpMatch: []*User{
+						{
+							ID:          1,
+							Name:        "satou",
+							DesiredRank: map[int]*Clinic{},
+						},
+						{
+							ID:          2,
+							Name:        "suzuki",
+							DesiredRank: map[int]*Clinic{},
+						},
+					},
+					Limit: 2,
+				},
+				u: &User{
+					ID:          5,
+					Name:        "watanabe",
+					DesiredRank: map[int]*Clinic{},
+				},
+			},
+			want: &User{
+				ID:          2,
+				Name:        "suzuki",
 				DesiredRank: map[int]*Clinic{},
 			},
 		},
