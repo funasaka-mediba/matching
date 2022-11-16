@@ -28,6 +28,21 @@
         - https://zenn.dev/mattn/articles/31dfed3c89956d
 - aスライス{1, 2, 3, 4}、bスライス{2, 3}があり、bスライスの要素の中でaスライスの最も右にあるものを判定したいとき。
     - iとjの二重ループ書いてみるとなんとかわかるよ！
+- ポインタ変数の代入で起こるpanicについて
+    ```golang
+    func XXX(u *User) {
+        var a *User{}
+
+        a = u // 代入するとpanicエラーが発生
+    }
+    ```
+    ```golang
+    func YYY(u *User) {
+        a := &User{}
+
+        a = u // これは問題ない
+    }
+    ```
 
 ## 残作業
 - どこで処理を完了とするかの判定
