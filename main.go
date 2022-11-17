@@ -88,30 +88,23 @@ func CreateMatch(user *User) *User {
 	var unMatchUser *User
 	for i := 1; i <= len(user.DesiredRank); i++ {
 		desiredClinic := user.DesiredRank[i]
-		fmt.Printf("\nuser: %+v\n", user.Name)
-		fmt.Printf("desiredClinic: %+v\n", desiredClinic.Name)
 		// desiredClinicのDesiredRankのvalueの中に登録しようとしているユーザーのIDが含まれていなければ、そのユーザーはそのクリニックとはアンマッチなのでスキップ
 		if !ContainsUserID(desiredClinic.DesiredRank, user.ID) {
-			fmt.Println("残念、クリニックはあなたいらないって")
-			fmt.Printf("user.Name: %+v, clinic.Name: %+v, unmatch\n", user.Name, desiredClinic.Name)
 			continue
 		}
-		fmt.Println("クリニックの希望リストにユーザーが含まれてるよ")
+
 		if len(desiredClinic.tmpMatch) < desiredClinic.Limit {
 			// ユーザーの希望しているクリニックの仮マッチリストに空きがあるので仮マッチ
-			fmt.Printf("len(desiredClinic.tmpMatch): %+v\n", len(desiredClinic.tmpMatch))
-			fmt.Printf("user.Name: %+v, clinic.Name: %+v, tmpMatch-1\n", user.Name, desiredClinic.Name)
 			desiredClinic.tmpMatch = append(desiredClinic.tmpMatch, user)
 			return nil
 		}
 		// この時点でユーザーの希望クリニックの仮マッチリストの要素が埋まっている
-		fmt.Println("仮マッチ埋まってる")
+
 		// 最下位のユーザーを判定する
 		unMatchUser = FindUnMatchUser(desiredClinic, user)
-		fmt.Printf("UnMatchUser.Name: %+v, clinic.Name: %+v\n", unMatchUser.Name, desiredClinic.Name)
+
 		if unMatchUser != user {
 			// ユーザーは仮マッチできる
-			fmt.Printf("user.Name: %+v, clinic.Name: %+v, tmpMatch-2\n", user.Name, desiredClinic.Name)
 			desiredClinic.UpdateTmpMatch(user, unMatchUser)
 			return unMatchUser
 		}
@@ -148,11 +141,9 @@ func (clinic *Clinic) UpdateTmpMatch(u, unMatchUser *User) {
 // FindUnMatchUser tmpMatch内のユーザーと新規ユーザーの中で最下位のユーザーを判定する
 func FindUnMatchUser(clinic *Clinic, u *User) *User {
 	userIDs := []int{u.ID}
-	fmt.Printf("FindUnMatchUser:: clinic: %v, u: %v\n", clinic.Name, u.Name)
 	for _, v := range clinic.tmpMatch {
 		userIDs = append(userIDs, v.ID)
 	}
-	fmt.Printf("userIDs: %+v\n", userIDs)
 	desiredRank := clinic.DesiredRank
 
 	// userIDsのIDの中で、desiredRankの中で一番右にあるIDを特定する
@@ -176,6 +167,5 @@ func FindUnMatchUser(clinic *Clinic, u *User) *User {
 			}
 		}
 	}
-	fmt.Printf("worstUser.Name: %+v\n", worstUser.Name)
 	return worstUser
 }
