@@ -51,14 +51,45 @@ func main() {
 		&abe,
 	}
 
+	fmt.Println("1st try")
 	unMatchUserIDs := CreateMatch(users, clinics)
-
 	for _, c := range clinics {
 		fmt.Printf("clinic name: %v, tmpMatch: %v\n", c.Name, c.TmpMatch)
 	}
 	fmt.Printf("unMatchUserIDs: %+v\n", unMatchUserIDs)
 
 	// TODO: アンマッチユーザーを再トライさせるのは何回？どこで終わるかの処理。
+	fmt.Println("2nd try")
+	var unMatchUsers []*User
+	for _, ID := range unMatchUserIDs {
+		for _, u := range users {
+			if ID == u.ID {
+				unMatchUsers = append(unMatchUsers, u)
+			}
+		}
+	}
+	unMatchUserIDs2 := CreateMatch(unMatchUsers, clinics)
+	for _, c := range clinics {
+		fmt.Printf("clinic name: %v, tmpMatch: %v\n", c.Name, c.TmpMatch)
+	}
+	fmt.Printf("unMatchUserIDs2: %+v\n", unMatchUserIDs2)
+
+	fmt.Println("3rd try")
+	var unMatchUsers2 []*User
+	for _, ID := range unMatchUserIDs2 {
+		for _, u := range users {
+			if ID == u.ID {
+				unMatchUsers2 = append(unMatchUsers2, u)
+			}
+		}
+	}
+	unMatchUserIDs3 := CreateMatch(unMatchUsers2, clinics)
+	for _, c := range clinics {
+		fmt.Printf("clinic name: %v, tmpMatch: %v\n", c.Name, c.TmpMatch)
+	}
+	fmt.Printf("unMatchUserIDs3: %+v\n", unMatchUserIDs3)
+
+	fmt.Println("もう仮マッチもアンマッチも変動ないので、処理終了")
 }
 
 // CreateMatch ユーザーを希望するクリニックとマッチさせる
