@@ -43,6 +43,23 @@
         a = u // これは問題ない
     }
     ```
+- 構造体のフィールドに「構造体のポインタ変数がvalueとなるmap」を持たせて、さらに、そのvalueとなる構造体がフィールドに「構造体のポインタ変数がvalueとなるmap」を持っている場合、テストがすごく複雑になるし、ロジックもわかりにくくなる。これ設計が悪いかも。
+```golang
+type Clinic struct {
+	ID          int
+	Name        string
+	DesiredRank []int   // 希望順位(ユーザーID)
+	tmpMatch    []*User // 仮マッチリスト
+	Limit       int     // 受け入れ人数限界
+}
+
+// User ユーザー
+type User struct {
+	ID          int
+	Name        string
+	DesiredRank map[int]*Clinic // 希望順位
+}
+```
 
 ## 残作業
 - どこで処理を完了とするかの判定
