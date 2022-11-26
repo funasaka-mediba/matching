@@ -400,8 +400,20 @@ func TestAttemptUnMatchUserMatch(t *testing.T) {
 											ID:          1,
 											Name:        "a",
 											DesiredRank: []int{1, 3, 7},
-											tmpMatch:    []*User{},
-											Limit:       2,
+											tmpMatch: []*User{
+												{
+
+													ID:          3,
+													Name:        "takahashi",
+													DesiredRank: map[int]*Clinic{},
+												},
+												{
+													ID:          1,
+													Name:        "satou",
+													DesiredRank: map[int]*Clinic{},
+												},
+											},
+											Limit: 2,
 										},
 									},
 								},

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"reflect"
 )
 
 // Clinic 配属先クリニック
@@ -93,6 +92,7 @@ func main() {
 // AttemptUnMatchUserMatch アンマッチユーザーのマッチング
 func AttemptUnMatchUserMatch(unMatchUsers []*User) []*User {
 	var unMatchUsers2 []*User
+	cnt := 0
 	// unMatchUsersとunMatchUsers2が同じにならない限り無限ループ
 	for i := 0; ; i++ {
 		if i%2 == 0 {
@@ -112,7 +112,14 @@ func AttemptUnMatchUserMatch(unMatchUsers []*User) []*User {
 			そもそも、ユーザー自体に、Clinicの構造体が含まれるmapを持たせるのが設計的に良くないかも。
 			ClinicのIDだけ持たせてなんとか設計を変えるか。
 			*/
-			if reflect.DeepEqual(unMatchUsers, unMatchUsers2) {
+			cnt = 0
+			for i := 0; i < len(unMatchUsers); i++ {
+				if unMatchUsers[i].ID != unMatchUsers2[i].ID {
+					break
+				}
+				cnt++
+			}
+			if cnt == len(unMatchUsers) && cnt == len(unMatchUsers2) {
 				return unMatchUsers
 			}
 			if i == 0 {
@@ -130,7 +137,14 @@ func AttemptUnMatchUserMatch(unMatchUsers []*User) []*User {
 			if unMatchUsers == nil {
 				return nil
 			}
-			if reflect.DeepEqual(unMatchUsers, unMatchUsers2) {
+			cnt = 0
+			for i := 0; i < len(unMatchUsers); i++ {
+				if unMatchUsers[i].ID != unMatchUsers2[i].ID {
+					break
+				}
+				cnt++
+			}
+			if cnt == len(unMatchUsers) && cnt == len(unMatchUsers2) {
 				return unMatchUsers
 			}
 			unMatchUsers2 = nil
