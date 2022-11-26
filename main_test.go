@@ -315,3 +315,136 @@ func TestFindUnMatchUser(t *testing.T) {
 		})
 	}
 }
+
+func TestAttemptUnMatchUserMatch(t *testing.T) {
+	type args struct {
+		unMatchUsers []*User
+	}
+	tests := []struct {
+		name string
+		args args
+		want []*User
+	}{
+		{
+			name: "success", // ユーザーが希望するクリニックがユーザーを求めていない場合
+			args: args{
+				[]*User{
+					{
+						ID:   1,
+						Name: "satou",
+						DesiredRank: map[int]*Clinic{1: {
+							ID:          1,
+							Name:        "a",
+							DesiredRank: []int{3, 7},
+							tmpMatch:    []*User{},
+							Limit:       2,
+						}},
+					},
+				},
+			},
+			want: []*User{
+				{
+					ID:   1,
+					Name: "satou",
+					DesiredRank: map[int]*Clinic{1: {
+						ID:          1,
+						Name:        "a",
+						DesiredRank: []int{3, 7},
+						tmpMatch:    []*User{},
+						Limit:       2,
+					}},
+				},
+			},
+		},
+		{
+			name: "success_no_unMatchUser", // ユーザーが希望するクリニックと仮マッチしてアンマッチユーザーがいなくなった場合
+			args: args{
+				[]*User{
+					{
+						ID:   1,
+						Name: "satou",
+						DesiredRank: map[int]*Clinic{1: {
+							ID:          1,
+							Name:        "a",
+							DesiredRank: []int{1, 2},
+							tmpMatch:    []*User{},
+							Limit:       2,
+						}},
+					},
+				},
+			},
+			want: nil,
+		},
+		{
+			name: "success_change_unMatchUsers", // ユーザーが希望するクリニックと仮マッチして、アンマッチユーザーが変わった場合
+			args: args{
+				[]*User{
+					{
+						ID:   1,
+						Name: "satou",
+						DesiredRank: map[int]*Clinic{1: {
+							ID:          1,
+							Name:        "a",
+							DesiredRank: []int{1, 3, 7},
+							tmpMatch: []*User{
+								{
+									ID:          3,
+									Name:        "takahashi",
+									DesiredRank: map[int]*Clinic{},
+								},
+								{
+									ID:   7,
+									Name: "kobayashi",
+									DesiredRank: map[int]*Clinic{
+										1: {
+											ID:          1,
+											Name:        "a",
+											DesiredRank: []int{1, 3, 7},
+											tmpMatch:    []*User{},
+											Limit:       2,
+										},
+									},
+								},
+							},
+							Limit: 2,
+						}},
+					},
+				},
+			},
+			want: []*User{
+				{
+					ID:   7,
+					Name: "kobayashi",
+					DesiredRank: map[int]*Clinic{
+						1: {
+							ID:          1,
+							Name:        "a",
+							DesiredRank: []int{1, 3, 7},
+							tmpMatch: []*User{
+								{
+
+									ID:          3,
+									Name:        "takahashi",
+									DesiredRank: map[int]*Clinic{},
+								},
+								{
+									ID:          1,
+									Name:        "satou",
+									DesiredRank: map[int]*Clinic{},
+								},
+							},
+							Limit: 2,
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := AttemptUnMatchUserMatch(tt.args.unMatchUsers); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("AttemptUnMatchUserMatch() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
