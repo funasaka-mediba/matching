@@ -7,455 +7,239 @@ import (
 
 func TestCreateMatch(t *testing.T) {
 	type args struct {
-		user *User
+		users   []*User
+		clinics []*Clinic
 	}
 	tests := []struct {
 		name string
 		args args
-		want *User
+		want []int
 	}{
 		{
-			name: "success",
+			name: "success_one_user_one_clinic_case1",
 			args: args{
-				user: &User{
-					ID:   3,
-					Name: "takahashi",
-					DesiredRank: map[int]*Clinic{1: {
-						ID:          3,
-						Name:        "c",
-						DesiredRank: []int{2, 5, 8, 1, 3, 4, 7},
-						tmpMatch: []*User{
-							{
-								ID:          1,
-								Name:        "satou",
-								DesiredRank: map[int]*Clinic{},
-							},
-							{
-								ID:          4,
-								Name:        "tanaka",
-								DesiredRank: map[int]*Clinic{},
-							},
-						},
-						Limit: 2,
-					}},
+				users: []*User{
+					{1, "satou", []int{1}},
+				},
+				clinics: []*Clinic{
+					{1, "a", []int{2}, []int{}, 2},
 				},
 			},
-			want: &User{
-				ID:          4,
-				Name:        "tanaka",
-				DesiredRank: map[int]*Clinic{},
+			want: []int{1},
+		},
+		{
+			name: "success_one_user_one_clinic_case2",
+			args: args{
+				users: []*User{
+					{1, "satou", []int{1}},
+				},
+				clinics: []*Clinic{
+					{1, "a", []int{1}, []int{}, 2},
+				},
 			},
+			want: []int{},
+		},
+		{
+			name: "success_one_user_one_clinic_case3",
+			args: args{
+				users: []*User{
+					{1, "satou", []int{1}},
+				},
+				clinics: []*Clinic{
+					{1, "a", []int{1, 2, 3}, []int{2, 3}, 2},
+				},
+			},
+			want: []int{3},
+		},
+		{
+			name: "success_two_user_one_clinic_case1",
+			args: args{
+				users: []*User{
+					{1, "satou", []int{1}},
+					{2, "suzuki", []int{1}},
+				},
+				clinics: []*Clinic{
+					{1, "a", []int{1}, []int{}, 2},
+				},
+			},
+			want: []int{2},
+		},
+		{
+			name: "success_two_user_one_clinic_case2",
+			args: args{
+				users: []*User{
+					{1, "satou", []int{1}},
+					{2, "suzuki", []int{1}},
+				},
+				clinics: []*Clinic{
+					{1, "a", []int{1, 2}, []int{}, 2},
+				},
+			},
+			want: []int{},
+		},
+		{
+			name: "success_three_user_one_clinic_case1",
+			args: args{
+				users: []*User{
+					{1, "satou", []int{1}},
+					{2, "suzuki", []int{1}},
+					{3, "takahashi", []int{1}},
+				},
+				clinics: []*Clinic{
+					{1, "a", []int{1, 2}, []int{}, 2},
+				},
+			},
+			want: []int{3},
+		},
+		{
+			name: "success_three_user_one_clinic_case2",
+			args: args{
+				users: []*User{
+					{1, "satou", []int{1}},
+					{2, "suzuki", []int{1}},
+					{3, "takahashi", []int{1}},
+				},
+				clinics: []*Clinic{
+					{1, "a", []int{2, 3, 1}, []int{}, 2},
+				},
+			},
+			want: []int{1},
+		},
+		{
+			name: "success_three_user_three_clinic_case1",
+			args: args{
+				users: []*User{
+					{1, "satou", []int{1, 2, 3}},
+					{2, "suzuki", []int{2, 1, 3}},
+					{3, "takahashi", []int{3, 2, 1}},
+				},
+				clinics: []*Clinic{
+					{1, "a", []int{2, 3, 1}, []int{}, 2},
+					{2, "b", []int{2, 3, 1}, []int{}, 2},
+					{3, "c", []int{2, 3, 1}, []int{}, 2},
+				},
+			},
+			want: []int{},
+		},
+		{
+			name: "success_eight_user_four_clinic_case1",
+			args: args{
+				users: []*User{
+					{1, "satou", []int{2}},
+					{2, "suzuki", []int{2, 1}},
+					{3, "takahashi", []int{2, 1}},
+					{4, "tanaka", []int{1, 2, 3, 4}},
+					{5, "watanabe", []int{2, 1, 4, 3}},
+					{6, "yamamoto", []int{2, 3, 1, 4}},
+					{7, "kobayashi", []int{2, 1, 4, 3}},
+					{8, "abe", []int{4, 2, 1, 3}},
+				},
+				clinics: []*Clinic{
+					{1, "a", []int{3, 7}, []int{}, 2},
+					{2, "b", []int{7, 8, 5, 1, 2, 3, 4, 6}, []int{}, 2},
+					{3, "c", []int{2, 5, 8, 1, 3, 4, 7}, []int{}, 2},
+					{4, "d", []int{2, 5, 1, 3, 6, 4, 7}, []int{}, 2},
+				},
+			},
+			want: []int{2, 1, 5},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := CreateMatch(tt.args.user); !reflect.DeepEqual(got, tt.want) {
+			if got := CreateMatch(tt.args.users, tt.args.clinics); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("CreateMatch() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestContainsUserID(t *testing.T) {
+func TestAttemptMatch(t *testing.T) {
 	type args struct {
-		desiredRank []int
-		ID          int
+		user   *User
+		clinic *Clinic
 	}
 	tests := []struct {
 		name string
 		args args
-		want bool
+		want int
 	}{
 		{
-			name: "success",
+			name: "success_no_userID_in_desired_clinic",
 			args: args{
-				desiredRank: []int{7, 8, 6, 1, 2, 3, 4, 6},
-				ID:          2,
+				user:   &User{1, "satou", []int{1}},
+				clinic: &Clinic{1, "a", []int{2}, []int{}, 2},
 			},
-			want: true,
+			want: 1,
+		},
+		{
+			name: "success_desired_clinic_tmp_match_empty",
+			args: args{
+				user:   &User{1, "satou", []int{1}},
+				clinic: &Clinic{1, "a", []int{1, 2}, []int{}, 2},
+			},
+			want: 0,
+		},
+		{
+			name: "success_desired_clinic_tmp_match_one_vacancy",
+			args: args{
+				user:   &User{1, "satou", []int{1}},
+				clinic: &Clinic{1, "a", []int{1, 2}, []int{2}, 2},
+			},
+			want: 0,
+		},
+		{
+			name: "success_desired_clinic_tmp_match_no_vacancy_but_match",
+			args: args{
+				user:   &User{1, "satou", []int{1}},
+				clinic: &Clinic{1, "a", []int{1, 2, 3}, []int{2, 3}, 2},
+			},
+			want: 3,
+		},
+		{
+			name: "success_desired_clinic_tmp_match_no_vacancy_and_unmatch",
+			args: args{
+				user:   &User{1, "satou", []int{1}},
+				clinic: &Clinic{1, "a", []int{2, 3, 1}, []int{2, 3}, 2},
+			},
+			want: 1,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ContainsUserID(tt.args.desiredRank, tt.args.ID); got != tt.want {
-				t.Errorf("ContainsUserID() = %v, want %v", got, tt.want)
+			if got := AttemptMatch(tt.args.user, tt.args.clinic); got != tt.want {
+				t.Errorf("AttemptMatch() = %v, want %v", got, tt.want)
 			}
-		})
-	}
-}
-
-func TestClinic_InsertTmpMatch(t *testing.T) {
-	type fields struct {
-		ID          int
-		Name        string
-		DesiredRank []int
-		tmpMatch    []*User
-		Limit       int
-	}
-	type args struct {
-		u *User
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-	}{
-		{
-			name: "success",
-			fields: fields{
-				ID:          1,
-				Name:        "a",
-				DesiredRank: []int{3, 7},
-				tmpMatch:    []*User{},
-				Limit:       2,
-			},
-			args: args{
-				u: &User{
-					ID:          3,
-					Name:        "takahashi",
-					DesiredRank: map[int]*Clinic{},
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			clinic := &Clinic{
-				ID:          tt.fields.ID,
-				Name:        tt.fields.Name,
-				DesiredRank: tt.fields.DesiredRank,
-				tmpMatch:    tt.fields.tmpMatch,
-				Limit:       tt.fields.Limit,
-			}
-			clinic.InsertTmpMatch(tt.args.u)
-		})
-	}
-}
-
-func TestClinic_UpdateTmpMatch(t *testing.T) {
-	type fields struct {
-		ID          int
-		Name        string
-		DesiredRank []int
-		tmpMatch    []*User
-		Limit       int
-	}
-	type args struct {
-		u           *User
-		unMatchUser *User
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-	}{
-		{
-			name: "success",
-			fields: fields{
-				ID:          3,
-				Name:        "c",
-				DesiredRank: []int{2, 5, 8, 1, 3, 4, 7},
-				tmpMatch: []*User{
-					{
-						ID:          1,
-						Name:        "satou",
-						DesiredRank: map[int]*Clinic{},
-					},
-					{
-						ID:          4,
-						Name:        "tanaka",
-						DesiredRank: map[int]*Clinic{},
-					},
-				},
-				Limit: 2,
-			},
-			args: args{
-				u: &User{
-					ID:          3,
-					Name:        "takahashi",
-					DesiredRank: map[int]*Clinic{},
-				},
-				unMatchUser: &User{
-					ID:          4,
-					Name:        "tanaka",
-					DesiredRank: map[int]*Clinic{},
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			clinic := &Clinic{
-				ID:          tt.fields.ID,
-				Name:        tt.fields.Name,
-				DesiredRank: tt.fields.DesiredRank,
-				tmpMatch:    tt.fields.tmpMatch,
-				Limit:       tt.fields.Limit,
-			}
-			clinic.UpdateTmpMatch(tt.args.u, tt.args.unMatchUser)
 		})
 	}
 }
 
 func TestFindUnMatchUser(t *testing.T) {
 	type args struct {
-		clinic Clinic
-		u      *User
+		c *Clinic
+		u *User
 	}
 	tests := []struct {
 		name string
 		args args
-		want *User
+		want int
 	}{
 		{
 			name: "success",
 			args: args{
-				clinic: Clinic{
-					ID:          2,
-					Name:        "b",
-					DesiredRank: []int{7, 8, 5, 1, 2, 3, 4, 6},
-					tmpMatch: []*User{
-						{
-							ID:          1,
-							Name:        "satou",
-							DesiredRank: map[int]*Clinic{},
-						},
-						{
-							ID:          2,
-							Name:        "suzuki",
-							DesiredRank: map[int]*Clinic{},
-						},
-					},
-					Limit: 2,
+				c: &Clinic{
+					1, "a", []int{2, 3, 1}, []int{2, 3}, 2,
 				},
 				u: &User{
-					ID:          3,
-					Name:        "takahashi",
-					DesiredRank: map[int]*Clinic{},
+					1, "satou", []int{1},
 				},
 			},
-			want: &User{
-				ID:          3,
-				Name:        "takahashi",
-				DesiredRank: map[int]*Clinic{},
-			},
-		},
-		{
-			name: "success",
-			args: args{
-				clinic: Clinic{
-					ID:          3,
-					Name:        "c",
-					DesiredRank: []int{2, 5, 8, 1, 3, 4, 7},
-					tmpMatch: []*User{
-						{
-							ID:          1,
-							Name:        "satou",
-							DesiredRank: map[int]*Clinic{},
-						},
-						{
-							ID:          4,
-							Name:        "tanaka",
-							DesiredRank: map[int]*Clinic{},
-						},
-					},
-					Limit: 2,
-				},
-				u: &User{
-					ID:          3,
-					Name:        "takahashi",
-					DesiredRank: map[int]*Clinic{},
-				},
-			},
-			want: &User{
-				ID:          4,
-				Name:        "tanaka",
-				DesiredRank: map[int]*Clinic{},
-			},
-		},
-		{
-			name: "success",
-			args: args{
-				clinic: Clinic{
-					ID:          2,
-					Name:        "b",
-					DesiredRank: []int{7, 8, 5, 1, 2, 3, 4, 6},
-					tmpMatch: []*User{
-						{
-							ID:          1,
-							Name:        "satou",
-							DesiredRank: map[int]*Clinic{},
-						},
-						{
-							ID:          2,
-							Name:        "suzuki",
-							DesiredRank: map[int]*Clinic{},
-						},
-					},
-					Limit: 2,
-				},
-				u: &User{
-					ID:          5,
-					Name:        "watanabe",
-					DesiredRank: map[int]*Clinic{},
-				},
-			},
-			want: &User{
-				ID:          2,
-				Name:        "suzuki",
-				DesiredRank: map[int]*Clinic{},
-			},
+			want: 1,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := FindUnMatchUser(&tt.args.clinic, tt.args.u); !reflect.DeepEqual(got, tt.want) {
+			if got := FindUnMatchUser(tt.args.c, tt.args.u); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("FindUnMatchUser() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestAttemptUnMatchUserMatch(t *testing.T) {
-	type args struct {
-		unMatchUsers []*User
-	}
-	tests := []struct {
-		name string
-		args args
-		want []*User
-	}{
-		{
-			name: "success", // ユーザーが希望するクリニックがユーザーを求めていない場合
-			args: args{
-				[]*User{
-					{
-						ID:   1,
-						Name: "satou",
-						DesiredRank: map[int]*Clinic{1: {
-							ID:          1,
-							Name:        "a",
-							DesiredRank: []int{3, 7},
-							tmpMatch:    []*User{},
-							Limit:       2,
-						}},
-					},
-				},
-			},
-			want: []*User{
-				{
-					ID:   1,
-					Name: "satou",
-					DesiredRank: map[int]*Clinic{1: {
-						ID:          1,
-						Name:        "a",
-						DesiredRank: []int{3, 7},
-						tmpMatch:    []*User{},
-						Limit:       2,
-					}},
-				},
-			},
-		},
-		{
-			name: "success_no_unMatchUser", // ユーザーが希望するクリニックと仮マッチしてアンマッチユーザーがいなくなった場合
-			args: args{
-				[]*User{
-					{
-						ID:   1,
-						Name: "satou",
-						DesiredRank: map[int]*Clinic{1: {
-							ID:          1,
-							Name:        "a",
-							DesiredRank: []int{1, 2},
-							tmpMatch:    []*User{},
-							Limit:       2,
-						}},
-					},
-				},
-			},
-			want: nil,
-		},
-		{
-			name: "success_change_unMatchUsers", // ユーザーが希望するクリニックと仮マッチして、アンマッチユーザーが変わった場合
-			args: args{
-				[]*User{
-					{
-						ID:   1,
-						Name: "satou",
-						DesiredRank: map[int]*Clinic{1: {
-							ID:          1,
-							Name:        "a",
-							DesiredRank: []int{1, 3, 7},
-							tmpMatch: []*User{
-								{
-									ID:          3,
-									Name:        "takahashi",
-									DesiredRank: map[int]*Clinic{},
-								},
-								{
-									ID:   7,
-									Name: "kobayashi",
-									DesiredRank: map[int]*Clinic{
-										1: {
-											ID:          1,
-											Name:        "a",
-											DesiredRank: []int{1, 3, 7},
-											tmpMatch: []*User{
-												{
-
-													ID:          3,
-													Name:        "takahashi",
-													DesiredRank: map[int]*Clinic{},
-												},
-												{
-													ID:          1,
-													Name:        "satou",
-													DesiredRank: map[int]*Clinic{},
-												},
-											},
-											Limit: 2,
-										},
-									},
-								},
-							},
-							Limit: 2,
-						}},
-					},
-				},
-			},
-			want: []*User{
-				{
-					ID:   7,
-					Name: "kobayashi",
-					DesiredRank: map[int]*Clinic{
-						1: {
-							ID:          1,
-							Name:        "a",
-							DesiredRank: []int{1, 3, 7},
-							tmpMatch: []*User{
-								{
-
-									ID:          3,
-									Name:        "takahashi",
-									DesiredRank: map[int]*Clinic{},
-								},
-								{
-									ID:          1,
-									Name:        "satou",
-									DesiredRank: map[int]*Clinic{},
-								},
-							},
-							Limit: 2,
-						},
-					},
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := AttemptUnMatchUserMatch(tt.args.unMatchUsers); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("AttemptUnMatchUserMatch() = %v, want %v", got, tt.want)
 			}
 		})
 	}
