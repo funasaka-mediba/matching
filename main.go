@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 // Clinic 配属先クリニック
 type Clinic struct {
@@ -51,15 +54,12 @@ func main() {
 		&abe,
 	}
 
-	fmt.Println("1st try")
+	fmt.Println("1 try")
 	unMatchUserIDs := CreateMatch(users, clinics)
 	for _, c := range clinics {
 		fmt.Printf("clinic name: %v, tmpMatch: %v\n", c.Name, c.TmpMatch)
 	}
 	fmt.Printf("unMatchUserIDs: %+v\n", unMatchUserIDs)
-
-	// TODO: アンマッチユーザーを再トライさせるのは何回？どこで終わるかの処理。
-	fmt.Println("2nd try")
 	var unMatchUsers []*User
 	for _, ID := range unMatchUserIDs {
 		for _, u := range users {
@@ -68,28 +68,38 @@ func main() {
 			}
 		}
 	}
-	unMatchUserIDs2 := CreateMatch(unMatchUsers, clinics)
+
+	unMatchUserIDsDic := [][]int{}
+	for i := 0; ; i++ {
+		fmt.Printf("%v try\n", i+2)
+		unMatchUserIDs, unMatchUsers = RetryMatch(users, unMatchUsers, clinics)
+		unMatchUserIDsDic = append(unMatchUserIDsDic, unMatchUserIDs)
+		if i > 0 {
+			if reflect.DeepEqual(unMatchUserIDsDic[i-1], unMatchUserIDsDic[i]) {
+				break
+			}
+		}
+	}
+
+	fmt.Println("もう仮マッチもアンマッチも変動ないので、処理終了")
+}
+
+func RetryMatch(users, unMatchUsers []*User, clinics []*Clinic) ([]int, []*User) {
+	unMatchUserIDs := CreateMatch(unMatchUsers, clinics)
 	for _, c := range clinics {
 		fmt.Printf("clinic name: %v, tmpMatch: %v\n", c.Name, c.TmpMatch)
 	}
-	fmt.Printf("unMatchUserIDs2: %+v\n", unMatchUserIDs2)
+	fmt.Printf("unMatchUserIDs: %+v\n", unMatchUserIDs)
 
-	fmt.Println("3rd try")
 	var unMatchUsers2 []*User
-	for _, ID := range unMatchUserIDs2 {
+	for _, ID := range unMatchUserIDs {
 		for _, u := range users {
 			if ID == u.ID {
 				unMatchUsers2 = append(unMatchUsers2, u)
 			}
 		}
 	}
-	unMatchUserIDs3 := CreateMatch(unMatchUsers2, clinics)
-	for _, c := range clinics {
-		fmt.Printf("clinic name: %v, tmpMatch: %v\n", c.Name, c.TmpMatch)
-	}
-	fmt.Printf("unMatchUserIDs3: %+v\n", unMatchUserIDs3)
-
-	fmt.Println("もう仮マッチもアンマッチも変動ないので、処理終了")
+	return unMatchUserIDs, unMatchUsers2
 }
 
 // CreateMatch ユーザーを希望するクリニックとマッチさせる
