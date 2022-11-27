@@ -2,38 +2,46 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 )
 
 // Clinic 配属先クリニック
 type Clinic struct {
 	ID          int
 	Name        string
-	DesiredRank []int   // 希望順位(ユーザーID)
-	tmpMatch    []*User // 仮マッチリスト
-	Limit       int     // 受け入れ人数限界
+	DesiredRank []int // 希望順位(ユーザーID)
+	TmpMatch    []int // 仮マッチ
+	Limit       int   // 受け入れ人数限界
 }
 
 // User ユーザー
 type User struct {
 	ID          int
 	Name        string
-	DesiredRank map[int]*Clinic // 希望順位
+	DesiredRank []int // 希望順位
 }
 
 func main() {
-	a := Clinic{1, "a", []int{3, 7}, []*User{}, 2}
-	b := Clinic{2, "b", []int{7, 8, 5, 1, 2, 3, 4, 6}, []*User{}, 2}
-	c := Clinic{3, "c", []int{2, 5, 8, 1, 3, 4, 7}, []*User{}, 2}
-	d := Clinic{4, "d", []int{2, 5, 1, 3, 6, 4, 7}, []*User{}, 2}
+	a := Clinic{1, "a", []int{3, 7}, []int{}, 2}
+	b := Clinic{2, "b", []int{7, 8, 5, 1, 2, 3, 4, 6}, []int{}, 2}
+	c := Clinic{3, "c", []int{2, 5, 8, 1, 3, 4, 7}, []int{}, 2}
+	d := Clinic{4, "d", []int{2, 5, 1, 3, 6, 4, 7}, []int{}, 2}
 
-	satou := User{1, "satou", map[int]*Clinic{1: &b}}
-	suzuki := User{2, "suzuki", map[int]*Clinic{1: &b, 2: &a}}
-	takahashi := User{3, "takahashi", map[int]*Clinic{1: &b, 2: &a}}
-	tanaka := User{4, "tanaka", map[int]*Clinic{1: &a, 2: &b, 3: &c, 4: &d}}
-	watanabe := User{5, "watanabe", map[int]*Clinic{1: &b, 2: &a, 3: &d, 4: &c}}
-	yamamoto := User{6, "yamamoto", map[int]*Clinic{1: &b, 2: &c, 3: &a, 4: &d}}
-	kobayashi := User{7, "kobayashi", map[int]*Clinic{1: &b, 2: &a, 3: &d, 4: &c}}
-	abe := User{8, "abe", map[int]*Clinic{1: &d, 2: &b, 3: &a, 4: &c}}
+	clinics := []*Clinic{
+		&a,
+		&b,
+		&c,
+		&d,
+	}
+
+	satou := User{1, "satou", []int{2}}
+	suzuki := User{2, "suzuki", []int{2, 1}}
+	takahashi := User{3, "takahashi", []int{2, 1}}
+	tanaka := User{4, "tanaka", []int{1, 2, 3, 4}}
+	watanabe := User{5, "watanabe", []int{2, 1, 4, 3}}
+	yamamoto := User{6, "yamamoto", []int{2, 3, 1, 4}}
+	kobayashi := User{7, "kobayashi", []int{2, 1, 4, 3}}
+	abe := User{8, "abe", []int{4, 2, 1, 3}}
 
 	users := []*User{
 		&satou,
@@ -46,184 +54,113 @@ func main() {
 		&abe,
 	}
 
+	fmt.Println("1 try")
+	unMatchUserIDs := CreateMatch(users, clinics)
+	for _, c := range clinics {
+		fmt.Printf("clinic name: %v, tmpMatch: %v\n", c.Name, c.TmpMatch)
+	}
+	fmt.Printf("unMatchUserIDs: %+v\n", unMatchUserIDs)
 	var unMatchUsers []*User
-
-	for _, user := range users {
-		unMatchUser := CreateMatch(user)
-		if unMatchUser != nil {
-			unMatchUsers = append(unMatchUsers, unMatchUser)
+	for _, ID := range unMatchUserIDs {
+		for _, u := range users {
+			if ID == u.ID {
+				unMatchUsers = append(unMatchUsers, u)
+			}
 		}
 	}
-	for _, v := range a.tmpMatch {
-		fmt.Printf("a.tmpMatch: %+v\n", v.Name)
-	}
-	for _, v := range b.tmpMatch {
-		fmt.Printf("b.tmpMatch: %+v\n", v.Name)
-	}
-	for _, v := range c.tmpMatch {
-		fmt.Printf("c.tmpMatch: %+v\n", v.Name)
-	}
-	for _, v := range d.tmpMatch {
-		fmt.Printf("d.tmpMatch: %+v\n", v.Name)
-	}
-	for i, v := range unMatchUsers {
-		fmt.Printf("unMatchUser%v: %v\n", i, v.Name)
+
+	unMatchUserIDsDic := [][]int{}
+	for i := 0; ; i++ {
+		fmt.Printf("%v try\n", i+2)
+		unMatchUserIDs, unMatchUsers = RetryMatch(users, unMatchUsers, clinics)
+		unMatchUserIDsDic = append(unMatchUserIDsDic, unMatchUserIDs)
+		if i > 0 {
+			if reflect.DeepEqual(unMatchUserIDsDic[i-1], unMatchUserIDsDic[i]) {
+				break
+			}
+		}
 	}
 
-	AttemptCreateMatch(unMatchUsers)
-
-	for _, v := range a.tmpMatch {
-		fmt.Printf("a.tmpMatch: %+v\n", v.Name)
-	}
-	for _, v := range b.tmpMatch {
-		fmt.Printf("b.tmpMatch: %+v\n", v.Name)
-	}
-	for _, v := range c.tmpMatch {
-		fmt.Printf("c.tmpMatch: %+v\n", v.Name)
-	}
-	for _, v := range d.tmpMatch {
-		fmt.Printf("d.tmpMatch: %+v\n", v.Name)
-	}
-	for i, v := range unMatchUsers {
-		fmt.Printf("unMatchUser%v: %v\n", i, v.Name)
-	}
+	fmt.Println("もう仮マッチもアンマッチも変動ないので、処理終了")
 }
 
-// AttemptUnMatchUserMatch アンマッチユーザーのマッチング
-func AttemptUnMatchUserMatch(unMatchUsers []*User) []*User {
+func RetryMatch(users, unMatchUsers []*User, clinics []*Clinic) ([]int, []*User) {
+	unMatchUserIDs := CreateMatch(unMatchUsers, clinics)
+	for _, c := range clinics {
+		fmt.Printf("clinic name: %v, tmpMatch: %v\n", c.Name, c.TmpMatch)
+	}
+	fmt.Printf("unMatchUserIDs: %+v\n", unMatchUserIDs)
+
 	var unMatchUsers2 []*User
-	cnt := 0
-	// unMatchUsersとunMatchUsers2が同じにならない限り無限ループ
-	for i := 0; ; i++ {
-		if i%2 == 0 {
-			for _, u := range unMatchUsers {
-				unMatchUser := CreateMatch(u)
-				if unMatchUser != nil {
-					unMatchUsers2 = append(unMatchUsers2, unMatchUser)
-				}
+	for _, ID := range unMatchUserIDs {
+		for _, u := range users {
+			if ID == u.ID {
+				unMatchUsers2 = append(unMatchUsers2, u)
 			}
-			if unMatchUsers2 == nil {
-				return nil
-			}
-			/* TODO
-			ここがダメっぽい。unMatchUsersに含まれるユーザーが持ってる
-			DesiredRankの中身に入っているtmpMatchの内容はCreateMatchごとに変わっていくから、
-			IDか何かをみて比較しなくちゃダメ。
-			そもそも、ユーザー自体に、Clinicの構造体が含まれるmapを持たせるのが設計的に良くないかも。
-			ClinicのIDだけ持たせてなんとか設計を変えるか。
-			*/
-			cnt = 0
-			for i := 0; i < len(unMatchUsers); i++ {
-				if unMatchUsers[i].ID != unMatchUsers2[i].ID {
-					break
-				}
-				cnt++
-			}
-			if cnt == len(unMatchUsers) && cnt == len(unMatchUsers2) {
-				return unMatchUsers
-			}
-			if i == 0 {
-				continue
-			}
-			unMatchUsers = nil
-		}
-		if i%2 == 1 {
-			for _, u := range unMatchUsers2 {
-				unMatchUser := CreateMatch(u)
-				if unMatchUser != nil {
-					unMatchUsers = append(unMatchUsers, unMatchUser)
-				}
-			}
-			if unMatchUsers == nil {
-				return nil
-			}
-			cnt = 0
-			for i := 0; i < len(unMatchUsers); i++ {
-				if unMatchUsers[i].ID != unMatchUsers2[i].ID {
-					break
-				}
-				cnt++
-			}
-			if cnt == len(unMatchUsers) && cnt == len(unMatchUsers2) {
-				return unMatchUsers
-			}
-			unMatchUsers2 = nil
 		}
 	}
+	return unMatchUserIDs, unMatchUsers2
 }
 
 // CreateMatch ユーザーを希望するクリニックとマッチさせる
-func CreateMatch(user *User) *User {
-	var unMatchUser *User
-	for i := 1; i <= len(user.DesiredRank); i++ {
-		desiredClinic := user.DesiredRank[i]
-		// desiredClinicのDesiredRankのvalueの中に登録しようとしているユーザーのIDが含まれていなければ、そのユーザーはそのクリニックとはアンマッチなのでスキップ
-		if !ContainsUserID(desiredClinic.DesiredRank, user.ID) {
-			continue
-		}
-
-		if len(desiredClinic.tmpMatch) < desiredClinic.Limit {
-			// ユーザーの希望しているクリニックの仮マッチリストに空きがあるので仮マッチ
-			desiredClinic.tmpMatch = append(desiredClinic.tmpMatch, user)
-			return nil
-		}
-		// この時点でユーザーの希望クリニックの仮マッチリストの要素が埋まっている
-
-		// 最下位のユーザーを判定する
-		unMatchUser = FindUnMatchUser(desiredClinic, user)
-
-		if unMatchUser != user {
-			// ユーザーは仮マッチできる
-			desiredClinic.UpdateTmpMatch(user, unMatchUser)
-			return unMatchUser
-		}
-		// 希望したクリニックと仮マッチできなかったため次のループへ
-	}
-	// 全ての希望クリニックを確認しても仮マッチできなかった場合
-	if unMatchUser == nil {
-		unMatchUser = user
-	}
-	return unMatchUser
-}
-
-// AttemptCreateMatch ユーザーを希望するクリニックとマッチさせる
-func AttemptCreateMatch(users []*User) {
-	var unMatchUsers []*User
+func CreateMatch(users []*User, clinics []*Clinic) []int {
+	unMatchUserID := 0
+	unMatchUserIDs := []int{}
 	for _, user := range users {
-		var unMatchUser *User
-		for i := 1; i <= len(user.DesiredRank); i++ {
-			desiredClinic := user.DesiredRank[i]
-			// desiredClinicのDesiredRankのvalueの中に登録しようとしているユーザーのIDが含まれていなければ、そのユーザーはそのクリニックとはアンマッチなのでスキップ
-			if !ContainsUserID(desiredClinic.DesiredRank, user.ID) {
-				continue
+	loop:
+		for i := 0; i < len(user.DesiredRank); i++ {
+			for _, clinic := range clinics {
+				if user.DesiredRank[i] == clinic.ID {
+					unMatchUserID = AttemptMatch(user, clinic)
+					switch unMatchUserID {
+					case 0:
+						// 空きがあって仮マッチできた場合 -> 別のuserへ
+						break loop
+					case user.ID:
+						// 仮マッチできなかった場合 -> 別のクリニックへ
+						continue
+					default:
+						// 空きがなかったが、仮マッチできた場合 -> 別のuserへ
+						unMatchUserIDs = append(unMatchUserIDs, unMatchUserID)
+						break loop
+					}
+				}
 			}
-
-			if len(desiredClinic.tmpMatch) < desiredClinic.Limit {
-				// ユーザーの希望しているクリニックの仮マッチリストに空きがあるので仮マッチ
-				desiredClinic.tmpMatch = append(desiredClinic.tmpMatch, user)
-				break
-			}
-			// この時点でユーザーの希望クリニックの仮マッチリストの要素が埋まっている
-
-			// 最下位のユーザーを判定する
-			unMatchUser = FindUnMatchUser(desiredClinic, user)
-
-			if unMatchUser != user {
-				// ユーザーは仮マッチできる
-				desiredClinic.UpdateTmpMatch(user, unMatchUser)
-				break
-			}
-			// 希望したクリニックと仮マッチできなかったため次のループへ
 		}
 		// 全ての希望クリニックを確認しても仮マッチできなかった場合
-		if unMatchUser != nil {
-			unMatchUsers = append(unMatchUsers, unMatchUser)
+		if unMatchUserID == user.ID {
+			unMatchUserIDs = append(unMatchUserIDs, user.ID)
 		}
 	}
+	return unMatchUserIDs
+}
 
-	if len(unMatchUsers) != 0 {
-		AttemptCreateMatch(unMatchUsers)
+// AttemptMatch 一人のUserと一つのClinic間で仮マッチを試みる
+func AttemptMatch(user *User, clinic *Clinic) int {
+	unMatchUserID := 0
+
+	if !ContainsUserID(clinic.DesiredRank, user.ID) {
+		// 希望しているclinicの希望順位にuserのIDがない場合
+		// このクリニックとはアンマッチ
+		return user.ID
 	}
+	// この行に到達するということは、userの希望しているclinicの希望順位にuserのIDが含まれているのは確定
+
+	// まずuserの希望しているclinicのTmpMatchに空きがあるかチェック
+	if len(clinic.TmpMatch) < clinic.Limit {
+		// 空きがある場合
+		clinic.TmpMatch = append(clinic.TmpMatch, user.ID) // 仮マッチ
+		return 0
+	}
+	// この行に到達した時点で、userの希望しているclinicのTmpMatchに空きがない
+	unMatchUserID = FindUnMatchUser(clinic, user) // 最下位のユーザーのIDが決定
+
+	if unMatchUserID != user.ID {
+		// 仮マッチリストの最下位ユーザーのIDを新規ユーザーIDで更新
+		clinic.UpdateTmpMatch(user.ID, unMatchUserID)
+		return unMatchUserID
+	}
+	return unMatchUserID
 }
 
 // ContainsUserID クリニックの希望順位リストにIDが含まれているか判定
@@ -236,27 +173,21 @@ func ContainsUserID(desiredRank []int, ID int) bool {
 	return false
 }
 
-// InsertTmpMatch ユーザーを仮マッチリストに登録
-func (clinic *Clinic) InsertTmpMatch(u *User) {
-	clinic.tmpMatch = append(clinic.tmpMatch, u)
-}
-
-// UpdateTmpMatch 仮マッチリストを新規ユーザーで更新
-func (clinic *Clinic) UpdateTmpMatch(u, unMatchUser *User) {
-	for i, v := range clinic.tmpMatch {
-		if v == unMatchUser {
-			clinic.tmpMatch[i] = u
+// UpdateTmpMatch 仮マッチリストを新規ユーザーIDで更新
+func (clinic *Clinic) UpdateTmpMatch(userID, unMatchUserID int) {
+	for i, v := range clinic.TmpMatch {
+		if v == unMatchUserID {
+			clinic.TmpMatch[i] = userID
 		}
 	}
 }
 
-// FindUnMatchUser tmpMatch内のユーザーと新規ユーザーの中で最下位のユーザーを判定する
-func FindUnMatchUser(clinic *Clinic, u *User) *User {
+// FindUnMatchUser TmpMatch内のユーザーと新規ユーザーの中で最下位のユーザーのIDを判定する
+func FindUnMatchUser(c *Clinic, u *User) int {
 	userIDs := []int{u.ID}
-	for _, v := range clinic.tmpMatch {
-		userIDs = append(userIDs, v.ID)
-	}
-	desiredRank := clinic.DesiredRank
+	userIDs = append(userIDs, c.TmpMatch...)
+
+	desiredRank := c.DesiredRank
 
 	// userIDsのIDの中で、desiredRankの中で一番右にあるIDを特定する
 	worstID := 0
@@ -267,17 +198,5 @@ func FindUnMatchUser(clinic *Clinic, u *User) *User {
 			}
 		}
 	}
-
-	// 最下位のIDを持つユーザーを特定する
-	worstUser := &User{}
-	if worstID == u.ID {
-		worstUser = u
-	} else {
-		for _, v := range clinic.tmpMatch {
-			if v.ID == worstID {
-				worstUser = v
-			}
-		}
-	}
-	return worstUser
+	return worstID
 }
